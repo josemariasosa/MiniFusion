@@ -33,3 +33,60 @@ impl Schema {
         self.fields.iter().position(|f| f.name == name)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn trips_schema() -> Schema {
+        Schema::new(vec![
+            Field {
+                name: "trip_id".to_string(),
+                data_type: DataType::Int64,
+            },
+            Field {
+                name: "zone".to_string(),
+                data_type: DataType::Utf8,
+            },
+            Field {
+                name: "distance_km".to_string(),
+                data_type: DataType::Float64,
+            },
+            Field {
+                name: "fare".to_string(),
+                data_type: DataType::Float64,
+            },
+        ])
+    }
+
+    // find_existing_field	field("zone") returns a Field with type Utf8
+    #[test]
+    fn find_existing_field() {
+        let trips = trips_schema();
+        let field = trips.field("zone").unwrap();
+        assert_eq!(field.data_type, DataType::Utf8);
+    }
+
+    // find_unknown_field	field("unknown") returns None
+    #[test]
+    fn find_unknown_field() {
+        let trips = trips_schema();
+        assert!(trips.field("unknown").is_none());
+    }
+
+    // find_field_index	index_of("distance_km") returns Some(2)
+    #[test]
+    fn find_field_index() {
+        let trips = trips_schema();
+        let field = trips.index_of("distance_km").unwrap();
+        assert_eq!(field, 2);
+    }
+
+    // empty_schema	An empty schema returns None for any lookup
+    #[test]
+    fn empty_schema() {
+        let schema = Schema::new(vec![]);
+        assert!(schema.field("trip_id").is_none());
+        assert!(schema.index_of("trip_id").is_none());
+    }
+}
