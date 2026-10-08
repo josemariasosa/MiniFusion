@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Int64(i64),
@@ -5,6 +7,18 @@ pub enum Value {
     Utf8(String),
     Boolean(bool),
     Null,
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Int64(v) => write!(f, "{v}"),
+            Value::Float64(v) => write!(f, "{v}"),
+            Value::Utf8(v) => write!(f, "{v}"),
+            Value::Boolean(v) => write!(f, "{v}"),
+            Value::Null => write!(f, "NULL"),
+        }
+    }
 }
 
 #[cfg(test)]
