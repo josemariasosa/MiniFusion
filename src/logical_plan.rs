@@ -204,15 +204,4 @@ mod tests {
             _ => panic!(),
         };
     }
-
-    // Construct a logical plan referencing a table that has not been registered or loaded:
-
-    // LogicalPlan::scan("imaginary_table")
-    //     .project(vec!["missing_column".to_string()])
-
-    // Verify that the plan can be constructed and inspected.
-
-    // No table lookup should occur.
-
-    // The builder is only capturing a query description.
 }
