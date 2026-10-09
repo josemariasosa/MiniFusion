@@ -100,20 +100,20 @@ mod tests {
         let expr = col("fare").gt(lit(Value::Int64(100)));
 
         // The root is a Binary expression.
-        matches!(expr, Expr::Binary { .. });
+        assert!(matches!(expr, Expr::Binary { .. }));
 
         let Expr::Binary { left, op, right } = expr else {
             panic!("Expected a Binary expression")
         };
 
         // The operator is Gt.
-        matches!(op, Operator::Gt);
+        assert!(matches!(op, Operator::Gt));
 
         // The left child is a column reference.
-        matches!(*left, Expr::Column(_));
+        assert!(matches!(*left, Expr::Column(_)));
 
         // The right child is a literal.
-        matches!(*right, Expr::Literal(_));
+        assert!(matches!(*right, Expr::Literal(_)));
     }
 
     // Test 4 — Nested Expressions
@@ -122,15 +122,15 @@ mod tests {
         let expr = col("distance_km")
             .gt(lit(Value::Int64(5)))
             .and(col("fare").lt(lit(Value::Int64(200))));
-        matches!(expr, Expr::Binary { .. });
+        assert!(matches!(expr, Expr::Binary { .. }));
 
         let Expr::Binary { left, op, right } = expr else {
             panic!("Expected a Binary expression")
         };
         // Verify that the root operator is And, with two binary expressions as children.
-        matches!(op, Operator::And);
-        matches!(*left, Expr::Binary { .. });
-        matches!(*right, Expr::Binary { .. });
+        assert!(matches!(op, Operator::And));
+        assert!(matches!(*left, Expr::Binary { .. }));
+        assert!(matches!(*right, Expr::Binary { .. }));
     }
 
     // Test 5 — Expression Display
