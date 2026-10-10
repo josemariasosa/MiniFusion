@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::schema::DataType;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Int64(i64),
@@ -21,8 +23,22 @@ impl fmt::Display for Value {
     }
 }
 
+impl Value {
+    pub fn data_type(&self) -> Option<DataType> {
+        match self {
+            Value::Int64(_) => Some(DataType::Int64),
+            Value::Float64(_) => Some(DataType::Float64),
+            Value::Utf8(_) => Some(DataType::Utf8),
+            Value::Boolean(_) => Some(DataType::Boolean),
+            Value::Null => None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::expr::Expr;
+
     use super::*;
 
     // 1. Two Value::Int64(42) values compare equal.
@@ -56,5 +72,45 @@ mod tests {
     fn boolean_equality() {
         assert_eq!(Value::Boolean(true), Value::Boolean(true));
         assert_ne!(Value::Boolean(true), Value::Boolean(false));
+    }
+
+    #[test]
+    fn literal_int64_type() {
+        let Expr::Literal(value) = Expr::Literal(Value::Int64(4)) else {
+            panic!()
+        };
+        assert_eq!(value.data_type().unwrap(), DataType::Int64);
+    }
+
+    #[test]
+    fn literal_float64_type() {
+        let Expr::Literal(value) = Expr::Literal(Value::Float64(5.0)) else {
+            panic!()
+        };
+        assert_eq!(value.data_type().unwrap(), DataType::Float64);
+    }
+
+    #[test]
+    fn literal_utf8_type() {
+        let Expr::Literal(value) = Expr::Literal(Value::Utf8("Maria".to_owned())) else {
+            panic!()
+        };
+        assert_eq!(value.data_type().unwrap(), DataType::Utf8);
+    }
+
+    #[test]
+    fn literal_boolean_type() {
+        let Expr::Literal(value) = Expr::Literal(Value::Boolean(false)) else {
+            panic!()
+        };
+        assert_eq!(value.data_type().unwrap(), DataType::Boolean);
+    }
+
+    #[test]
+    fn literal_null_has_no_type() {
+        let Expr::Literal(value) = Expr::Literal(Value::Null) else {
+            panic!()
+        };
+        assert!(value.data_type().is_none());
     }
 }

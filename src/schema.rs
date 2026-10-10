@@ -37,27 +37,7 @@ impl Schema {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn trips_schema() -> Schema {
-        Schema::new(vec![
-            Field {
-                name: "trip_id".to_string(),
-                data_type: DataType::Int64,
-            },
-            Field {
-                name: "zone".to_string(),
-                data_type: DataType::Utf8,
-            },
-            Field {
-                name: "distance_km".to_string(),
-                data_type: DataType::Float64,
-            },
-            Field {
-                name: "fare".to_string(),
-                data_type: DataType::Float64,
-            },
-        ])
-    }
+    use crate::trips_schema;
 
     // find_existing_field	field("zone") returns a Field with type Utf8
     #[test]
