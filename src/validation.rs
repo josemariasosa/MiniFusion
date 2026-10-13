@@ -1,6 +1,6 @@
 use crate::{
     expr::{Expr, Operator},
-    schema::{DataType, Schema},
+    schema::{DataType, Field, Schema},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -64,6 +64,25 @@ pub fn validate_filter(predicate: &Expr, schema: &Schema) -> Result<(), Validati
     } else {
         Err(ValidationError::ExpectedBoolean)
     }
+}
+
+pub fn project_schema(
+    columns: &[String],
+    input_schema: &Schema,
+) -> Result<Schema, ValidationError> {
+    let new_fields: Vec<Field> = columns
+        .iter()
+        .map(|name| {
+            input_schema
+                .fields
+                .iter()
+                .find(|field| &field.name == name)
+                .cloned()
+                .ok_or_else(|| ValidationError::UnknownColumn(name.clone()))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(Schema::new(new_fields))
 }
 
 #[cfg(test)]
@@ -252,5 +271,42 @@ mod tests {
             validate_filter(&expr, &schema),
             Err(ValidationError::TypeMismatch)
         );
+    }
+
+    #[test]
+    fn project_existing_columns_preserves_order() {
+        let schema = trips_schema();
+        let projected =
+            project_schema(&vec!["fare".to_owned(), "zone".to_owned()], &schema).unwrap();
+
+        assert_eq!(schema.fields.len(), 4);
+        assert_eq!(projected.fields.len(), 2);
+        assert_eq!(
+            (
+                projected.fields[0].name.clone(),
+                projected.fields[1].name.clone()
+            ),
+            ("fare".to_owned(), "zone".to_owned())
+        );
+    }
+
+    #[test]
+    fn reject_unknown_projection_column() {
+        let schema = trips_schema();
+        let projected = project_schema(&vec!["unknown".to_owned()], &schema);
+
+        assert_eq!(
+            projected,
+            Err(ValidationError::UnknownColumn("unknown".to_owned()))
+        )
+    }
+
+    #[test]
+    fn project_empty_column_list() {
+        let schema = trips_schema();
+        let projected = project_schema(&vec![], &schema).unwrap();
+
+        assert_eq!(schema.fields.len(), 4);
+        assert_eq!(projected.fields.len(), 0);
     }
 }
